@@ -4,6 +4,7 @@ body {
   background-size: cover;
   background-color: rgb(187, 178, 168);
   font-family: monospace, Arial, Helvetica, sans-serif;
+  height: 100vh;
 }
 
 .mainContent {
@@ -107,10 +108,7 @@ h3 {
   display: none;
   position: absolute;
   top: 30%;
-  left: 50%;
-  margin-left: -250px;
   width: 400px;
-  height: 400px;
   box-shadow: 2px 3px 2px 0px rgb(59, 59, 57);
   background-color: rgb(117, 115, 112);
   border-radius: 10px;
