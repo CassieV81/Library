@@ -61,6 +61,32 @@ function addBookToLibrary(book) {
     console.error('Could not add book to database');
   };
 }
+function updateBookInDatabase(book) {
+  const transaction = myLibrary.transaction('books', 'readwrite');
+  const objectStore = transaction.objectStore('books');
+  const request = objectStore.put(book);
+  request.onsuccess = function(event) {
+    console.log('Book updated in the library');
+  };
+  request.onerror = function(event) {
+    console.log('Error updating book in the library: ' + event.target.errorCode);
+  };
+}
+function addEditBtn(newDiv, id, book) {
+  let editBtn = document.createElement('button');
+  editBtn.innerHTML = 'Edit';
+  editBtn.setAttribute('class', 'inBtn');
+  newDiv.appendChild(editBtn);
+  editBtn.addEventListener('click', function() {
+    displayBook.replaceChild(editForm, newDiv);
+    document.getElementById('editTitle').value = book.name;
+    document.getElementById('editAuthor').value = book.author;
+    document.getElementById('editPages').value = book.pages;
+    document.getElementById('editRead').checked = book.read;
+    document.getElementById('editId').value = id;
+  });
+}
+
 function deleteBookFromLibrary(id) {
   const transaction = myLibrary.transaction('books', 'readwrite');
   const objectStore = transaction.objectStore('books');
@@ -74,11 +100,11 @@ function deleteBookFromLibrary(id) {
 }
 
 function addRemoveBtn(newDiv, id) {
-  let removeBtn = document.createElement('button');
-  removeBtn.innerText = 'Remove';
-  removeBtn.setAttribute('class', 'inBtn');
+  let removeBtn = document.createElement('div');
+  removeBtn.innerHTML = '+';
+  removeBtn.setAttribute('class', 'inBtn1');
   newDiv.appendChild(removeBtn);
-  removeBtn.addEventListener('click', function() {
+  removeBtn.addEventListener('click', function(e) {
     displayBook.removeChild(newDiv);
     deleteBookFromLibrary(id);
   });
@@ -128,6 +154,7 @@ function listBooks() {
       newDiv.innerHTML = '<h3>' + books[i].name + '</h3>' + '<h5>' + books[i].author + '</h5>' + '<h6>' + books[i].pages + ' pages' + '</h6>';
       addRemoveBtn(newDiv, books[i].id);
       addReadBtn(newDiv, books[i]);
+      addEditBtn(newDiv, books[i].id, books[i]);
       displayBook.appendChild(newDiv);
     }
   };
@@ -136,14 +163,16 @@ function listBooks() {
   };
 }
 
-function display() {
+function display(book) {
   let newDiv = document.createElement("div");
   newDiv.setAttribute('class', 'bookDiv');
-  newDiv.innerHTML = '<h3>' + newBook.name + '</h3>' + '<h5>' + newBook.author + '</h5>' + '<h6>' + newBook.pages + ' pages' + '</h6>';
-  addRemoveBtn(newDiv, myLibrary.length - 1);
-  addReadBtn(newDiv);
+  newDiv.innerHTML = '<h3>' + book.name + '</h3>' + '<h5>' + book.author + '</h5>' + '<h6>' + book.pages + ' pages' + '</h6>';
+  addRemoveBtn(newDiv, book.id);
+  addReadBtn(newDiv, book);
+  addEditBtn(newDiv, book.id, book);
   displayBook.appendChild(newDiv);
 }
+
 
 
 addBook.addEventListener('click', function openForm() {
@@ -160,7 +189,7 @@ addBtn.addEventListener('click', function closeForm(e) {
     let pages = document.getElementById('pages');
     createBook(title.value, author.value, pages.value);
     addBookToLibrary(newBook);
-    display();
+    display(newBook);
     document.querySelector('.openForm').style.display = 'none';
     form.reset();
   }
