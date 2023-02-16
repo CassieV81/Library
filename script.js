@@ -12,34 +12,31 @@ let isEditing = false
 
 let myLibrary;
 
-function openLibrary() {
-  const request = indexedDB.open('library', 1);
+const request = indexedDB.open('library', 1);
 
-  request.onerror = function(event) {
-    console.log('Error opening library', event.target.error);
-  };
+request.onerror = function(event) {
+  console.log('Error opening library', event.target.error);
+};
 
-  request.onsuccess = function (event) {
-    myLibrary = event.target.result;
-    console.log("Successfully opened the database.");
-    listBooks();
-  };
+request.onsuccess = function (event) {
+  myLibrary = event.target.result;
+  console.log("Successfully opened the database.");
+  listBooks();
+};
 
-  request.onupgradeneeded = function (event) {
-    myLibrary = event.target.result;
-    const objectStore = myLibrary.createObjectStore('books', {keypath: 'id', autoIncrement: true});
-    objectStore.createIndex('name', 'name', { unique: false });
-    objectStore.createIndex('author', 'author', { unique: false });
-    objectStore.createIndex('pages', 'pages', { unique: false });
-  };
+request.onupgradeneeded = function (event) {
+  myLibrary = event.target.result;
+  const objectStore = myLibrary.createObjectStore('books', {keypath: 'id', autoIncrement: true});
+  objectStore.createIndex('name', 'name', { unique: false });
+  objectStore.createIndex('author', 'author', { unique: false });
+  objectStore.createIndex('pages', 'pages', { unique: false });
+};
 
-  request.onblocked = function(event) {
-    console.log("The database is blocked by another tab or window.");
-  };
+request.onblocked = function(event) {
+  console.log("The database is blocked by another tab or window.");
+};
 
-}
 
-openLibrary();
 
 function Book(name, author, pages) {
   this.name = name;
