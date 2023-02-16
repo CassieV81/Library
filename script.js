@@ -1,12 +1,25 @@
 'use strict';
 
+if (!('indexedDB' in window)) {
+  console.log("This browser doesn't support IndexedDB");
+  // return;
+}
+
 let myLibrary = [{name: 'The Hobbit', author: 'J.R.R. Tolkien', pages: '304'}, {name: 'Harry Potter', author: 'J.K. Rowling', pages: '336'}];
+
+// let myLibrary;
+
+// const request = indexDB.open('library', 1);
+
+
+
 let newBook;
 const displayBook = document.getElementById('card');
 const addBook = document.getElementById('newBook');
 const addBtn = document.querySelector('.formBtn');
 const closeBtn = document.querySelector('.close');
 const form = document.querySelector('form');
+
 
 
 function Book(name, author, pages) {
@@ -20,8 +33,9 @@ function createBook(name, author, pages) {
 }
 
 function addBookToLibrary(book) {
-  myLibrary.push(book)
+  myLibrary.push(book);
 }
+
 
 function addRemoveBtn(newDiv, index) {
   let removeBtn = document.createElement("button");
@@ -111,3 +125,4 @@ addBtn.addEventListener('click', function closeForm(e) {
 closeBtn.addEventListener('mousedown', function closeForm(e) {
   document.querySelector('.openForm').style.display = 'none';
 })
+
