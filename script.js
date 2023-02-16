@@ -61,6 +61,7 @@ function addBookToLibrary(book) {
   request.onerror = function() {
     console.error('Could not add book to database');
   };
+  location.reload();
 }
 function updateBookInDatabase(book) {
   const transaction = myLibrary.transaction('books', 'readwrite');
