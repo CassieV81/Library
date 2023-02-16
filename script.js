@@ -15,7 +15,7 @@ let myLibrary;
 function openLibrary() {
   const request = indexedDB.open('library', 1);
 
-  request.oneerror = function(event) {
+  request.onerror = function(event) {
     console.log('Error opening library', event.target.error);
   };
 
@@ -75,7 +75,7 @@ function updateBookInDatabase(book) {
   };
   location.reload();
 }
-
+let currentId;
 function addEditBtn(newDiv, id, book) {
   let editBtn = document.createElement('button');
   editBtn.innerHTML = 'Edit';
@@ -88,6 +88,7 @@ function addEditBtn(newDiv, id, book) {
     document.getElementById('author').value = book.author;
     document.getElementById('pages').value = book.pages;
     id = book.id;
+    currentId = id;
     
     document.querySelector('.openForm').style.display = 'block';
   });
@@ -209,7 +210,7 @@ addBtn.addEventListener('click', function closeForm(e) {
       pages: pages.value,
     };
     if (isEditing) {
-      deleteBookFromLibrary(id);
+      deleteBookFromLibrary(currentId);
       updateBookInDatabase(bookData);
     } else {
       createBook(title.value, author.value, pages.value);
