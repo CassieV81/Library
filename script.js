@@ -88,9 +88,6 @@ function addEditBtn(newDiv, id, book) {
     document.getElementById('author').value = book.author;
     document.getElementById('pages').value = book.pages;
     id = book.id;
-
-    
-    deleteBookFromLibrary(id);
     
     document.querySelector('.openForm').style.display = 'block';
   });
@@ -212,6 +209,7 @@ addBtn.addEventListener('click', function closeForm(e) {
       pages: pages.value,
     };
     if (isEditing) {
+      deleteBookFromLibrary(id);
       updateBookInDatabase(bookData);
     } else {
       createBook(title.value, author.value, pages.value);
@@ -223,6 +221,7 @@ addBtn.addEventListener('click', function closeForm(e) {
   }
 })
 closeBtn.addEventListener('mousedown', function closeForm(e) {
+  form.reset();
   document.querySelector('.openForm').style.display = 'none';
 })
 
