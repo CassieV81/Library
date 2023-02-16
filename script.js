@@ -97,7 +97,7 @@ function addEditBtn(newDiv, id, book) {
 function deleteBookFromLibrary(id) {
   const transaction = myLibrary.transaction('books', 'readwrite');
   const objectStore = transaction.objectStore('books');
-  const request = objectStore.delete(id);
+  const request = objectStore.delete(Number(id));
   request.onsuccess = function() {
     console.log('Book deleted from database');
   };
@@ -112,6 +112,7 @@ function addRemoveBtn(newDiv, id) {
   hidden.setAttribute('class', 'hiddenInfo2');
   removeBtn.innerHTML = '+';
   removeBtn.setAttribute('class', 'inBtn1');
+  removeBtn.setAttribute('data-id', id);
   newDiv.appendChild(removeBtn);
   newDiv.appendChild(hidden);
   removeBtn.addEventListener('mouseenter', function() {
@@ -125,10 +126,12 @@ function addRemoveBtn(newDiv, id) {
     hidden.style.display = 'none';
   })
   removeBtn.addEventListener('click', function(e) {
+    const id = e.target.getAttribute('data-id');
     displayBook.removeChild(newDiv);
     deleteBookFromLibrary(id);
   });
 }
+
 
 function addReadBtn(newDiv) {
   let readBtn = document.createElement('button');
