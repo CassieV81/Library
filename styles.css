@@ -115,6 +115,20 @@ h3 {
   height: auto;
   transition: 1s;
 }
+.hiddenInfo2 {
+  display: none;
+  background-color: #0f0f0e;
+  border-radius: 3px;
+  color: antiquewhite;
+  position: absolute;
+  top: -25px;
+  right: 15px;
+  font-size:12px;
+  padding: 2px 5px;
+  width: auto;
+  height: auto;
+  transition: 1s;
+}
 
 .buttonClass:hover, button:hover {
   background:rgba(0,0,0,0.75);

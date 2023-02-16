@@ -8,6 +8,7 @@ const addBook = document.getElementById('newBook');
 const addBtn = document.querySelector('.formBtn');
 const closeBtn = document.querySelector('.close');
 const form = document.querySelector('form');
+let isEditing = false
 
 let myLibrary;
 
@@ -71,19 +72,26 @@ function updateBookInDatabase(book) {
   request.onerror = function(event) {
     console.log('Error updating book in the library: ' + event.target.errorCode);
   };
+  location.reload();
 }
+
 function addEditBtn(newDiv, id, book) {
   let editBtn = document.createElement('button');
   editBtn.innerHTML = 'Edit';
   editBtn.setAttribute('class', 'inBtn');
   newDiv.appendChild(editBtn);
   editBtn.addEventListener('click', function() {
-    displayBook.replaceChild(editForm, newDiv);
-    document.getElementById('editTitle').value = book.name;
-    document.getElementById('editAuthor').value = book.author;
-    document.getElementById('editPages').value = book.pages;
-    document.getElementById('editRead').checked = book.read;
-    document.getElementById('editId').value = id;
+    isEditing = true; 
+
+    document.getElementById('title').value = book.name;
+    document.getElementById('author').value = book.author;
+    document.getElementById('pages').value = book.pages;
+    id = book.id;
+
+    
+    deleteBookFromLibrary(id);
+    
+    document.querySelector('.openForm').style.display = 'block';
   });
 }
 
@@ -101,9 +109,22 @@ function deleteBookFromLibrary(id) {
 
 function addRemoveBtn(newDiv, id) {
   let removeBtn = document.createElement('div');
+  let hidden = document.createElement("p");
+  hidden.setAttribute('class', 'hiddenInfo2');
   removeBtn.innerHTML = '+';
   removeBtn.setAttribute('class', 'inBtn1');
   newDiv.appendChild(removeBtn);
+  newDiv.appendChild(hidden);
+  removeBtn.addEventListener('mouseenter', function() {
+    hidden.innerText = 'Delete Book';
+    hidden.style.display = 'block';
+    setTimeout(() => {
+      hidden.style.display = 'none';
+    }, 5000);
+  })
+  removeBtn.addEventListener('mouseleave', function() {
+    hidden.style.display = 'none';
+  })
   removeBtn.addEventListener('click', function(e) {
     displayBook.removeChild(newDiv);
     deleteBookFromLibrary(id);
@@ -180,18 +201,24 @@ addBook.addEventListener('click', function openForm() {
 })
 
 addBtn.addEventListener('click', function closeForm(e) {
+  e.preventDefault();
   if (!author.value) {
-    author.setCustomValidity('Please fill in this field')
+    author.setCustomValidity('Please fill in this field');
   } else {
-    e.preventDefault();
-    let title = document.getElementById('title');
-    let author = document.getElementById('author');
-    let pages = document.getElementById('pages');
-    createBook(title.value, author.value, pages.value);
-    addBookToLibrary(newBook);
-    display(newBook);
-    document.querySelector('.openForm').style.display = 'none';
+    const bookData = {
+      name: title.value,
+      author: author.value,
+      pages: pages.value,
+    };
+    if (isEditing) {
+      updateBookInDatabase(bookData);
+    } else {
+      createBook(title.value, author.value, pages.value);
+      addBookToLibrary(newBook);
+    }
     form.reset();
+    document.querySelector('.openForm').style.display = 'none';
+    isEditing = false; // reset flag to false
   }
 })
 closeBtn.addEventListener('mousedown', function closeForm(e) {
