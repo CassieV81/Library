@@ -1,17 +1,6 @@
 'use strict';
 
-if (!('indexedDB' in window)) {
-  console.log("This browser doesn't support IndexedDB");
-  // return;
-}
-
-let myLibrary = [{name: 'The Hobbit', author: 'J.R.R. Tolkien', pages: '304'}, {name: 'Harry Potter', author: 'J.K. Rowling', pages: '336'}];
-
-// let myLibrary;
-
-// const request = indexDB.open('library', 1);
-
-
+// let myLibrary = [{name: 'The Hobbit', author: 'J.R.R. Tolkien', pages: '304'}, {name: 'Harry Potter', author: 'J.K. Rowling', pages: '336'}];
 
 let newBook;
 const displayBook = document.getElementById('card');
@@ -20,7 +9,36 @@ const addBtn = document.querySelector('.formBtn');
 const closeBtn = document.querySelector('.close');
 const form = document.querySelector('form');
 
+let myLibrary;
 
+function openLibrary() {
+  const request = indexedDB.open('library', 1);
+
+  request.oneerror = function(event) {
+    console.log('Error opening library', event.target.error);
+  };
+
+  request.onsuccess = function (event) {
+    myLibrary = event.target.result;
+    console.log("Successfully opened the database.");
+    listBooks();
+  };
+
+  request.onupgradeneeded = function (event) {
+    myLibrary = event.target.result;
+    const objectStore = myLibrary.createObjectStore('books', {keypath: 'id', autoIncrement: true});
+    objectStore.createIndex('name', 'name', { unique: false });
+    objectStore.createIndex('author', 'author', { unique: false });
+    objectStore.createIndex('pages', 'pages', { unique: false });
+  };
+
+  request.onblocked = function(event) {
+    console.log("The database is blocked by another tab or window.");
+  };
+
+}
+
+openLibrary();
 
 function Book(name, author, pages) {
   this.name = name;
@@ -33,18 +51,36 @@ function createBook(name, author, pages) {
 }
 
 function addBookToLibrary(book) {
-  myLibrary.push(book);
+  const transaction = myLibrary.transaction('books', 'readwrite');
+  const objectStore = transaction.objectStore('books');
+  const request = objectStore.add(book);
+  request.onsuccess = function() {
+    console.log('Book added to database');
+  };
+  request.onerror = function() {
+    console.error('Could not add book to database');
+  };
+}
+function deleteBookFromLibrary(id) {
+  const transaction = myLibrary.transaction('books', 'readwrite');
+  const objectStore = transaction.objectStore('books');
+  const request = objectStore.delete(id);
+  request.onsuccess = function() {
+    console.log('Book deleted from database');
+  };
+  request.onerror = function() {
+    console.error('Could not delete book from database');
+  };
 }
 
-
-function addRemoveBtn(newDiv, index) {
-  let removeBtn = document.createElement("button");
-  removeBtn.innerText = "Remove";
-  removeBtn.setAttribute('class', 'inBtn')
+function addRemoveBtn(newDiv, id) {
+  let removeBtn = document.createElement('button');
+  removeBtn.innerText = 'Remove';
+  removeBtn.setAttribute('class', 'inBtn');
   newDiv.appendChild(removeBtn);
-  removeBtn.addEventListener("click", function() {
+  removeBtn.addEventListener('click', function() {
     displayBook.removeChild(newDiv);
-    myLibrary.splice(index, 1);
+    deleteBookFromLibrary(id);
   });
 }
 
@@ -81,17 +117,24 @@ function addReadBtn(newDiv) {
 }
 
 function listBooks() {
-  let listObjects = myLibrary;
-  for (let i = 0; i < listObjects.length; i++) {
-    let newDiv = document.createElement("div");
-    newDiv.setAttribute('class', 'bookDiv')
-    newDiv.innerHTML = '<h3>' + listObjects[i].name + '</h3>' + '<h5>' + listObjects[i].author + '</h5>' + '<h6>' + listObjects[i].pages + ' pages' + '</h6>';
-    addRemoveBtn(newDiv, i);
-    addReadBtn(newDiv);
-    displayBook.appendChild(newDiv);
-  }
+  const transaction = myLibrary.transaction('books', 'readonly');
+  const objectStore = transaction.objectStore('books');
+  const request = objectStore.getAll();
+  request.onsuccess = function() {
+    const books = request.result;
+    for (let i = 0; i < books.length; i++) {
+      let newDiv = document.createElement('div');
+      newDiv.setAttribute('class', 'bookDiv');
+      newDiv.innerHTML = '<h3>' + books[i].name + '</h3>' + '<h5>' + books[i].author + '</h5>' + '<h6>' + books[i].pages + ' pages' + '</h6>';
+      addRemoveBtn(newDiv, books[i].id);
+      addReadBtn(newDiv, books[i]);
+      displayBook.appendChild(newDiv);
+    }
+  };
+  request.onerror = function() {
+    console.error('Could not list books from database');
+  };
 }
-listBooks();
 
 function display() {
   let newDiv = document.createElement("div");
