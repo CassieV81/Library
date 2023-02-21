@@ -91,10 +91,10 @@ function addEditBtn(newDiv, id, book) {
   });
 }
 
-function deleteBookFromLibrary(key) {
+function deleteBookFromLibrary(id) {
   const transaction = myLibrary.transaction('books', 'readwrite');
   const objectStore = transaction.objectStore('books');
-  const request = objectStore.delete(Number(key));
+  const request = objectStore.delete(Number(id));
   request.onsuccess = function() {
     console.log('Book deleted from database');
   };
@@ -103,13 +103,13 @@ function deleteBookFromLibrary(key) {
   };
 }
 
-function addRemoveBtn(newDiv, key) {
+function addRemoveBtn(newDiv, id) {
   let removeBtn = document.createElement('div');
   let hidden = document.createElement("p");
   hidden.setAttribute('class', 'hiddenInfo2');
   removeBtn.innerHTML = '+';
   removeBtn.setAttribute('class', 'inBtn1');
-  removeBtn.setAttribute('data-id', key);
+  removeBtn.setAttribute('data-id', id);
   newDiv.appendChild(removeBtn);
   newDiv.appendChild(hidden);
   removeBtn.addEventListener('mouseenter', function() {
