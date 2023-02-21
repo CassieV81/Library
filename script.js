@@ -26,7 +26,7 @@ request.onsuccess = function (event) {
 
 request.onupgradeneeded = function (event) {
   myLibrary = event.target.result;
-  const objectStore = myLibrary.createObjectStore('books', {keypath: 'id', autoIncrement: true});
+  const objectStore = myLibrary.createObjectStore('books', {keyPath: 'id', autoIncrement: true});
   objectStore.createIndex('name', 'name', { unique: false });
   objectStore.createIndex('author', 'author', { unique: false });
   objectStore.createIndex('pages', 'pages', { unique: false });
@@ -41,7 +41,7 @@ request.onblocked = function(event) {
 function Book(name, author, pages) {
   this.name = name;
   this.author = author;
-  this.pages = pages
+  this.pages = pages;
 }
 
 function createBook(name, author, pages) {
