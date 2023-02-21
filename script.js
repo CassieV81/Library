@@ -26,10 +26,10 @@ request.onsuccess = function (event) {
 
 request.onupgradeneeded = function (event) {
   myLibrary = event.target.result;
-  const objectStore = myLibrary.createObjectStore('books', {keyPath: 'id', autoIncrement: true});
-  objectStore.createIndex('name', 'name', { unique: false });
-  objectStore.createIndex('author', 'author', { unique: false });
-  objectStore.createIndex('pages', 'pages', { unique: false });
+  const objectStore = myLibrary.createObjectStore('books', { keyPath: 'id', autoIncrement: true });
+  objectStore.createIndex('name', 'name', { unique: true });
+  objectStore.createIndex('author', 'author', { unique: true });
+  objectStore.createIndex('pages', 'pages', { unique: true });
 };
 
 request.onblocked = function(event) {
@@ -41,7 +41,7 @@ request.onblocked = function(event) {
 function Book(name, author, pages) {
   this.name = name;
   this.author = author;
-  this.pages = pages;
+  this.pages = pages
 }
 
 function createBook(name, author, pages) {
@@ -91,10 +91,10 @@ function addEditBtn(newDiv, id, book) {
   });
 }
 
-function deleteBookFromLibrary(id) {
+function deleteBookFromLibrary(key) {
   const transaction = myLibrary.transaction('books', 'readwrite');
   const objectStore = transaction.objectStore('books');
-  const request = objectStore.delete(Number(id));
+  const request = objectStore.delete(Number(key));
   request.onsuccess = function() {
     console.log('Book deleted from database');
   };
@@ -103,13 +103,13 @@ function deleteBookFromLibrary(id) {
   };
 }
 
-function addRemoveBtn(newDiv, id) {
+function addRemoveBtn(newDiv, key) {
   let removeBtn = document.createElement('div');
   let hidden = document.createElement("p");
   hidden.setAttribute('class', 'hiddenInfo2');
   removeBtn.innerHTML = '+';
   removeBtn.setAttribute('class', 'inBtn1');
-  removeBtn.setAttribute('data-id', id);
+  removeBtn.setAttribute('data-id', key);
   newDiv.appendChild(removeBtn);
   newDiv.appendChild(hidden);
   removeBtn.addEventListener('mouseenter', function() {
@@ -218,7 +218,7 @@ addBtn.addEventListener('click', function closeForm(e) {
     }
     form.reset();
     document.querySelector('.openForm').style.display = 'none';
-    isEditing = false; // reset flag to false
+    isEditing = false; 
   }
 })
 closeBtn.addEventListener('mousedown', function closeForm(e) {
