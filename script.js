@@ -12,7 +12,7 @@ let isEditing = false
 
 let myLibrary;
 
-const request = indexedDB.open('library', 1);
+const request = window.indexedDB.open('library', 1);
 
 request.onerror = function(event) {
   console.log('Error opening library', event.target.error);
