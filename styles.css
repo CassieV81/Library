@@ -136,7 +136,7 @@ h3 {
   transition: 0.4s;
 }
 
-.openForm {
+.openForm, .openForm2 {
   display: none;
   position: absolute;
   top: 30%;
@@ -145,7 +145,7 @@ h3 {
   background-color: rgb(117, 115, 112);
   border-radius: 10px;
 }
-.close {
+.close, .closeSearch {
   position: absolute;
   right: 10px;
   top: 0;
@@ -196,7 +196,7 @@ form input:hover {
 form, h2, label, input {
   background-color: rgb(187, 178, 168);
 }
-.formBtn {
+.formBtn, .formBtn2 {
   align-self: center;
   margin-top: 30px;
   width: 100px;
@@ -206,4 +206,8 @@ form, h2, label, input {
   width: 150px;
   height: 50px;
   transition: .4s;
+}
+.openForm2 h2, .openForm2 label, .openForm2 button {
+  margin-top: 5px;
+  margin-bottom: 2px;
 }

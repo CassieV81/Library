@@ -6,14 +6,21 @@ let newBook;
 const displayBook = document.getElementById('card');
 const addBook = document.getElementById('newBook');
 const addBtn = document.querySelector('.formBtn');
+const searchBtn = document.querySelector('.formBtn2');
 const closeBtn = document.querySelector('.close');
+const closeSearch = document.querySelector('.closeSearch');
 const form = document.querySelector('form');
+const allBooks = document.getElementById('allBooks');
+const findBook = document.getElementById('findBook');
 let isEditing = false
 
 let myLibrary;
 
 const request = window.indexedDB.open('library', 1);
 
+// const allBooks = () => {
+//   listBooks();
+// }
 request.onerror = function(event) {
   console.log('Error opening library', event.target.error);
 };
@@ -21,7 +28,6 @@ request.onerror = function(event) {
 request.onsuccess = function (event) {
   myLibrary = event.target.result;
   console.log("Successfully opened the database.");
-  listBooks();
 };
 
 request.onupgradeneeded = function (event) {
@@ -37,7 +43,59 @@ request.onblocked = function(event) {
   console.log("The database is blocked by another tab or window.");
 };
 
+allBooks.addEventListener('click', function() {
+  if (allBooks.innerHTML == "All Books") {
+    listBooks();
+    // allBooks.disabled = true;
+    allBooks.innerHTML = "Hide Books";
+  } else {
+    displayBook.innerHTML = ''
+    allBooks.innerHTML = "All Books";
+  }
+})
+findBook.addEventListener('click', function() {
+  document.querySelector('.openForm2').style.display = 'block';
+})
 
+function searchBook(query) {
+  const transaction = myLibrary.transaction('books', 'readonly');
+  const objectStore = transaction.objectStore('books');
+  const index = objectStore.index('name');
+  const request = index.getAll(query);
+
+  request.onsuccess = function(event) {
+    const books = event.target.result;
+    console.log(books);
+    displayBooks(books);
+  };
+}
+
+function displayBooks(books) {
+  displayBook.innerHTML = '';
+  
+  books.forEach(function(book) {
+    let newDiv = document.createElement("div");
+    newDiv.setAttribute('class', 'bookDiv');
+    newDiv.innerHTML = '<h3>' + book.name + '</h3>' + '<h5>' + book.author + '</h5>' + '<h6>' + book.pages + ' pages' + '</h6>';
+    addRemoveBtn(newDiv, book.id);
+    addReadBtn(newDiv, book.id);
+    addEditBtn(newDiv, book.id, book);
+    displayBook.appendChild(newDiv);
+  });
+}
+
+
+searchBtn.addEventListener('click', function searchBooks(e) {
+  e.preventDefault();
+  const query = document.getElementById('search').value;
+  searchBook(query);
+});
+
+
+closeSearch.addEventListener('mousedown', function closeForm(e) {
+  form.reset();
+  document.querySelector('.openForm2').style.display = 'none';
+})
 
 function Book(name, author, pages, read) {
   this.name = name;
@@ -66,19 +124,6 @@ function addBookToLibrary(book) {
   location.reload();
 }
 
-function updateBookInDatabase(book) {
-  const transaction = myLibrary.transaction('books', 'readwrite');
-  const objectStore = transaction.objectStore('books');
-  const request = objectStore.put(book);
-  request.onsuccess = function(event) {
-    console.log('Book updated in the library');
-  };
-  request.onerror = function(event) {
-    console.log('Error updating book in the library: ' + event.target.errorCode);
-  };
-  location.reload();
-}
-
 let currentId;
 function addEditBtn(newDiv, id, book) {
   let editBtn = document.createElement('button');
@@ -91,13 +136,33 @@ function addEditBtn(newDiv, id, book) {
     document.getElementById('title').value = book.name;
     document.getElementById('author').value = book.author;
     document.getElementById('pages').value = book.pages;
-    document.getElementById('read').value = book.read;
+    document.getElementsByClassName('readBtn').innerText = book.read;
     id = book.id;
     currentId = id;
     
     document.querySelector('.openForm').style.display = 'block';
   });
 }
+
+function updateBookInDatabase(book) {
+  const transaction = myLibrary.transaction('books', 'readwrite');
+  const objectStore = transaction.objectStore('books');
+  const request = objectStore.openCursor(IDBKeyRange.only(book.id));
+  request.onsuccess = function(event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      cursor.update(book);
+      console.log('Book updated in the library');
+    } else {
+      console.log('Book not found in the library');
+    }
+  };
+  request.onerror = function(event) {
+    console.log('Error updating book in the library: ' + event.target.errorCode);
+  };
+  location.reload;
+}
+
 
 function deleteBookFromLibrary(id) {
   const transaction = myLibrary.transaction('books', 'readwrite');
@@ -213,15 +278,15 @@ function listBooks() {
   };
 }
 
-function display(book) {
-  let newDiv = document.createElement("div");
-  newDiv.setAttribute('class', 'bookDiv');
-  newDiv.innerHTML = '<h3>' + book.name + '</h3>' + '<h5>' + book.author + '</h5>' + '<h6>' + book.pages + ' pages' + '</h6>';
-  addRemoveBtn(newDiv, book.id);
-  addReadBtn(newDiv, book.id);
-  addEditBtn(newDiv, book.id, book);
-  displayBook.appendChild(newDiv);
-}
+// function display(book) {
+//   let newDiv = document.createElement("div");
+//   newDiv.setAttribute('class', 'bookDiv');
+//   newDiv.innerHTML = '<h3>' + book.name + '</h3>' + '<h5>' + book.author + '</h5>' + '<h6>' + book.pages + ' pages' + '</h6>';
+//   addRemoveBtn(newDiv, book.id);
+//   addReadBtn(newDiv, book.id);
+//   addEditBtn(newDiv, book.id, book);
+//   displayBook.appendChild(newDiv);
+// }
 
 
 
@@ -231,28 +296,24 @@ addBook.addEventListener('click', function openForm() {
 
 addBtn.addEventListener('click', function closeForm(e) {
   e.preventDefault();
-  console.log('works');
   if (!author.value) {
     console.log('works2');
     author.setCustomValidity('Please fill in this field');
   } else {
-    console.log('works3');
     const bookData = {
       name: title.value,
       author: author.value,
       pages: pages.value,
       read: read.value,
+      id: currentId,
     };
     if (isEditing) {
-      console.log('works4');
-      deleteBookFromLibrary(currentId);
       updateBookInDatabase(bookData);
+      location.reload();
     } else {
-      console.log('works5');
       createBook(title.value, author.value, pages.value, read.value);
       addBookToLibrary(newBook);
     }
-    console.log('works6');
     form.reset();
     document.querySelector('.openForm').style.display = 'none';
     isEditing = false; 
