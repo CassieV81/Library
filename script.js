@@ -27,10 +27,10 @@ request.onsuccess = function (event) {
 request.onupgradeneeded = function (event) {
   myLibrary = event.target.result;
   const objectStore = myLibrary.createObjectStore('books', { keyPath: 'id', autoIncrement: true });
-  objectStore.createIndex('name', 'name', { unique: true });
-  objectStore.createIndex('author', 'author', { unique: true });
-  objectStore.createIndex('pages', 'pages', { unique: true });
-  objectStore.createIndex('read', 'read', { unique: false });
+  objectStore.createIndex('name', 'name', );
+  objectStore.createIndex('author', 'author', );
+  objectStore.createIndex('pages', 'pages', );
+  objectStore.createIndex('read', 'read', );
 };
 
 request.onblocked = function(event) {
@@ -60,8 +60,12 @@ function addBookToLibrary(book) {
   request.onerror = function() {
     console.error('Could not add book to database');
   };
+  transaction.oncomplete = function() {
+    console.log('Transaction complete');
+  };
   location.reload();
 }
+
 function updateBookInDatabase(book) {
   const transaction = myLibrary.transaction('books', 'readwrite');
   const objectStore = transaction.objectStore('books');
@@ -74,6 +78,7 @@ function updateBookInDatabase(book) {
   };
   location.reload();
 }
+
 let currentId;
 function addEditBtn(newDiv, id, book) {
   let editBtn = document.createElement('button');
@@ -226,9 +231,12 @@ addBook.addEventListener('click', function openForm() {
 
 addBtn.addEventListener('click', function closeForm(e) {
   e.preventDefault();
+  console.log('works');
   if (!author.value) {
+    console.log('works2');
     author.setCustomValidity('Please fill in this field');
   } else {
+    console.log('works3');
     const bookData = {
       name: title.value,
       author: author.value,
@@ -236,19 +244,22 @@ addBtn.addEventListener('click', function closeForm(e) {
       read: read.value,
     };
     if (isEditing) {
+      console.log('works4');
       deleteBookFromLibrary(currentId);
       updateBookInDatabase(bookData);
     } else {
+      console.log('works5');
       createBook(title.value, author.value, pages.value, read.value);
       addBookToLibrary(newBook);
     }
+    console.log('works6');
     form.reset();
     document.querySelector('.openForm').style.display = 'none';
     isEditing = false; 
   }
 })
+
 closeBtn.addEventListener('mousedown', function closeForm(e) {
   form.reset();
   document.querySelector('.openForm').style.display = 'none';
 })
-
