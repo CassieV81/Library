@@ -30,6 +30,7 @@ request.onupgradeneeded = function (event) {
   objectStore.createIndex('name', 'name', { unique: true });
   objectStore.createIndex('author', 'author', { unique: true });
   objectStore.createIndex('pages', 'pages', { unique: true });
+  objectStore.createIndex('read', 'read', { unique: false });
 };
 
 request.onblocked = function(event) {
@@ -38,14 +39,15 @@ request.onblocked = function(event) {
 
 
 
-function Book(name, author, pages) {
+function Book(name, author, pages, read) {
   this.name = name;
   this.author = author;
-  this.pages = pages
+  this.pages = pages;
+  this.read = read;
 }
 
-function createBook(name, author, pages) {
-  newBook = new Book(name, author, pages);
+function createBook(name, author, pages, read) {
+  newBook = new Book(name, author, pages, read);
 }
 
 function addBookToLibrary(book) {
@@ -84,6 +86,7 @@ function addEditBtn(newDiv, id, book) {
     document.getElementById('title').value = book.name;
     document.getElementById('author').value = book.author;
     document.getElementById('pages').value = book.pages;
+    document.getElementById('read').value = book.read;
     id = book.id;
     currentId = id;
     
@@ -130,11 +133,19 @@ function addRemoveBtn(newDiv, id) {
 }
 
 
-function addReadBtn(newDiv) {
+function addReadBtn(newDiv, id) {
   let readBtn = document.createElement('button');
   let hidden = document.createElement("p");
-  readBtn.innerText = 'Not read';
   readBtn.setAttribute('class', 'readBtn');
+  readBtn.setAttribute('data-id', id);
+  id = readBtn.getAttribute('data-id');
+  const transaction = myLibrary.transaction(['books'], 'readwrite');
+  const objectStore = transaction.objectStore('books');
+  const request = objectStore.get(Number(id));
+  request.onsuccess = function() {
+    const book = request.result;
+    readBtn.innerHTML = book.read;
+  };
   hidden.setAttribute('class', 'hiddenInfo');
   newDiv.appendChild(readBtn);
   newDiv.appendChild(hidden);
@@ -153,13 +164,27 @@ function addReadBtn(newDiv) {
   readBtn.addEventListener('mouseleave', function() {
     hidden.style.display = 'none';
   })
-  readBtn.addEventListener('click', function() {
-    if (readBtn.innerText == 'Not read') {
-      readBtn.innerHTML = 'Read &#10004';
-    } else {
-      readBtn.innerText = 'Not read';
-    }
-  })
+  readBtn.addEventListener('click', function(e) {
+    const transaction = myLibrary.transaction(['books'], 'readwrite');
+    const objectStore = transaction.objectStore('books');
+    const id = e.target.getAttribute('data-id');
+    console.log(id);
+    const request = objectStore.get(Number(id));
+    request.onsuccess = function() {
+      const book = request.result;
+      console.log(book);
+      if (readBtn.innerText == 'Not read') {
+        readBtn.innerHTML = 'Read &#10004';
+        book.read = 'Read &#10004';
+        objectStore.put(book);
+      } else {
+        readBtn.innerText = 'Not read';
+        book.read = 'Not read';
+        objectStore.put(book);
+      }
+    };
+  });  
+
 }
 
 function listBooks() {
@@ -173,7 +198,7 @@ function listBooks() {
       newDiv.setAttribute('class', 'bookDiv');
       newDiv.innerHTML = '<h3>' + books[i].name + '</h3>' + '<h5>' + books[i].author + '</h5>' + '<h6>' + books[i].pages + ' pages' + '</h6>';
       addRemoveBtn(newDiv, books[i].id);
-      addReadBtn(newDiv, books[i]);
+      addReadBtn(newDiv, books[i].id);
       addEditBtn(newDiv, books[i].id, books[i]);
       displayBook.appendChild(newDiv);
     }
@@ -188,7 +213,7 @@ function display(book) {
   newDiv.setAttribute('class', 'bookDiv');
   newDiv.innerHTML = '<h3>' + book.name + '</h3>' + '<h5>' + book.author + '</h5>' + '<h6>' + book.pages + ' pages' + '</h6>';
   addRemoveBtn(newDiv, book.id);
-  addReadBtn(newDiv, book);
+  addReadBtn(newDiv, book.id);
   addEditBtn(newDiv, book.id, book);
   displayBook.appendChild(newDiv);
 }
@@ -208,12 +233,13 @@ addBtn.addEventListener('click', function closeForm(e) {
       name: title.value,
       author: author.value,
       pages: pages.value,
+      read: read.value,
     };
     if (isEditing) {
       deleteBookFromLibrary(currentId);
       updateBookInDatabase(bookData);
     } else {
-      createBook(title.value, author.value, pages.value);
+      createBook(title.value, author.value, pages.value, read.value);
       addBookToLibrary(newBook);
     }
     form.reset();
