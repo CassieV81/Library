@@ -46,7 +46,6 @@ request.onblocked = function(event) {
 allBooks.addEventListener('click', function() {
   if (allBooks.innerHTML == "All Books") {
     listBooks();
-    // allBooks.disabled = true;
     allBooks.innerHTML = "Hide Books";
   } else {
     displayBook.innerHTML = ''
@@ -89,6 +88,8 @@ searchBtn.addEventListener('click', function searchBooks(e) {
   e.preventDefault();
   const query = document.getElementById('search').value;
   searchBook(query);
+  form.reset();
+  document.querySelector('.openForm2').style.display = 'none';
 });
 
 
